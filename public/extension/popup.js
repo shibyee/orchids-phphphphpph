@@ -56,11 +56,11 @@ function openEditor() {
     document.getElementById('edit-tokUsd').value = currentData.tokUsd;
     document.getElementById('edit-tokChg').value = currentData.tokChg;
     document.getElementById('edit-homeName').value = currentData.homeName;
-    document.getElementById('editorModal').style.display = 'flex';
+    showScreen('s-editor');
 }
 
 function closeEditor() {
-    document.getElementById('editorModal').style.display = 'none';
+    showScreen('s1');
 }
 
 function saveData() {
@@ -76,7 +76,6 @@ function saveData() {
     };
     
     updateUI();
-    closeEditor();
     showScreen('s3');
     
     if (typeof chrome !== 'undefined' && chrome.storage) {
