@@ -6,7 +6,8 @@ const DEFAULTS = {
     tokAmt: "0.01 SOL",
     tokUsd: "1.22",
     tokChg: "-0.03",
-    badgeCount: "3"
+    badgeCount: "3",
+    banner: "Meet Phantom Terminal, your new home for desktop trading"
 };
 
 let currentData = { ...DEFAULTS };
@@ -17,17 +18,21 @@ function updateUI() {
     // Display updates
     document.getElementById('disp-homeName').textContent = data.homeName;
     document.getElementById('disp-bal').textContent = data.bal;
+    document.getElementById('disp-banner').textContent = data.banner;
+    document.getElementById('disp-badgeCount').textContent = data.badgeCount;
     
     // Delta
-    const deltaVal = data.delta.replace('-', '').replace('+', '');
-    const isNegDelta = data.delta.startsWith('-');
+    const deltaStr = String(data.delta);
+    const deltaVal = deltaStr.replace('-', '').replace('+', '');
+    const isNegDelta = deltaStr.startsWith('-');
     document.getElementById('disp-delta').textContent = deltaVal;
     document.getElementById('disp-delta-sign').textContent = isNegDelta ? "-$" : "+$";
-    document.getElementById('disp-delta-color').style.color = isNegDelta ? "#FF4D4D" : "#00FFA3";
+    document.getElementById('disp-delta-color').style.color = isNegDelta ? "var(--down-color)" : "var(--up-color)";
     
     // Pct
-    const pctVal = data.pct.replace('-', '').replace('+', '');
-    const isNegPct = data.pct.startsWith('-');
+    const pctStr = String(data.pct);
+    const pctVal = pctStr.replace('-', '').replace('+', '');
+    const isNegPct = pctStr.startsWith('-');
     document.getElementById('disp-pct').textContent = pctVal;
     document.getElementById('disp-pct-sign').textContent = isNegPct ? "-" : "+";
     document.getElementById('disp-pct-badge').className = "pct-badge " + (isNegPct ? "" : "up");
@@ -36,11 +41,12 @@ function updateUI() {
     document.getElementById('disp-tokAmt').textContent = data.tokAmt;
     document.getElementById('disp-tokUsd').textContent = data.tokUsd;
     
-    const chgVal = data.tokChg.replace('-', '').replace('+', '');
-    const isNegChg = data.tokChg.startsWith('-');
+    const chgStr = String(data.tokChg);
+    const chgVal = chgStr.replace('-', '').replace('+', '');
+    const isNegChg = chgStr.startsWith('-');
     document.getElementById('disp-tokChg').textContent = chgVal;
     document.getElementById('disp-tokChg-sign').textContent = isNegChg ? "-$" : "+$";
-    document.getElementById('disp-tokChg-color').style.color = isNegChg ? "#FF4D4D" : "#00FFA3";
+    document.getElementById('disp-tokChg-color').style.color = isNegChg ? "var(--down-color)" : "var(--up-color)";
 }
 
 function showScreen(id) {
@@ -56,11 +62,8 @@ function openEditor() {
     document.getElementById('edit-tokUsd').value = currentData.tokUsd;
     document.getElementById('edit-tokChg').value = currentData.tokChg;
     document.getElementById('edit-homeName').value = currentData.homeName;
+    document.getElementById('edit-banner').value = currentData.banner;
     showScreen('s-editor');
-}
-
-function closeEditor() {
-    showScreen('s1');
 }
 
 function saveData() {
@@ -73,6 +76,7 @@ function saveData() {
         tokUsd: document.getElementById('edit-tokUsd').value,
         tokChg: document.getElementById('edit-tokChg').value,
         homeName: document.getElementById('edit-homeName').value,
+        banner: document.getElementById('edit-banner').value,
     };
     
     updateUI();
@@ -87,17 +91,26 @@ function saveData() {
 
 // Init
 window.onload = () => {
-    const saved = localStorage.getItem('phantom_mock_data');
-    if (saved) {
-        currentData = JSON.parse(saved);
-        updateUI();
-    } else if (typeof chrome !== 'undefined' && chrome.storage) {
+    // Check Chrome Storage first
+    if (typeof chrome !== 'undefined' && chrome.storage) {
         chrome.storage.local.get(['mockData'], (res) => {
             if (res.mockData) {
-                currentData = res.mockData;
+                currentData = { ...DEFAULTS, ...res.mockData };
                 updateUI();
+            } else {
+                const saved = localStorage.getItem('phantom_mock_data');
+                if (saved) {
+                    currentData = { ...DEFAULTS, ...JSON.parse(saved) };
+                    updateUI();
+                }
             }
         });
+    } else {
+        const saved = localStorage.getItem('phantom_mock_data');
+        if (saved) {
+            currentData = { ...DEFAULTS, ...JSON.parse(saved) };
+            updateUI();
+        }
     }
     updateUI();
 };
