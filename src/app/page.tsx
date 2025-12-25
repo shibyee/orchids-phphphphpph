@@ -234,24 +234,11 @@ const FILES = {
             background: #1F1F1F;
         }
 
-        /* Editor Modal */
-        #editorModal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .modal-content {
-            background: #1A1A1A;
-            width: 100%;
-            border-radius: 24px;
-            padding: 24px;
-            max-height: 90%;
+        /* Editor Screen */
+        .editor-content {
+            flex: 1;
             overflow-y: auto;
+            padding: 0 24px 24px;
         }
         .field-group { margin-bottom: 16px; }
         .field-group label {
@@ -363,14 +350,15 @@ const FILES = {
         </nav>
     </div>
 
-    <!-- Modal Editor -->
-    <div id="editorModal">
-        <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-                <h3 style="margin:0">Edit Mock Data</h3>
-                <button onclick="closeEditor()" style="background:none;border:none;color:white;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-            </div>
-
+    <!-- Editor Screen -->
+    <div id="s-editor" class="screen">
+        <header>
+            <button onclick="closeEditor()" style="background:none;border:none;color:white;cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+            <span class="header-title">Edit Mock Data</span>
+            <div style="width:24px"></div>
+        </header>
+        
+        <div class="editor-content">
             <div class="field-group">
                 <label>Total Balance</label>
                 <input type="text" id="edit-bal" value="1.22">
@@ -469,11 +457,11 @@ function openEditor() {
     document.getElementById('edit-tokUsd').value = currentData.tokUsd;
     document.getElementById('edit-tokChg').value = currentData.tokChg;
     document.getElementById('edit-homeName').value = currentData.homeName;
-    document.getElementById('editorModal').style.display = 'flex';
+    showScreen('s-editor');
 }
 
 function closeEditor() {
-    document.getElementById('editorModal').style.display = 'none';
+    showScreen('s1');
 }
 
 function saveData() {
@@ -489,7 +477,6 @@ function saveData() {
     };
     
     updateUI();
-    closeEditor();
     showScreen('s3');
     
     if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -520,126 +507,17 @@ window.onload = () => {
 export default function ShowcasePage() {
   const [data, setData] = useState(DEFAULTS);
   const [screen, setScreen] = useState("s3"); // Default to Home
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [view, setView] = useState("preview"); // preview | instructions | code
   const [privateKey, setPrivateKey] = useState("");
 
   // Update logic
   const handleSave = () => {
-    setIsEditorOpen(false);
+    setScreen("s3");
     toast.success("Data updated successfully!");
-  };
-
-  const handleReset = () => {
-    setData(DEFAULTS);
-    toast.info("Data reset to defaults");
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500/30">
-      {/* Editor Modal */}
-      <AnimatePresence>
-        {isEditorOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm space-y-4 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xl font-bold text-white">Edit Mock Data</h3>
-                <button onClick={() => setIsEditorOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Account Address (Screen 2)</label>
-                  <input
-                    type="text"
-                    value={data.addr}
-                    onChange={(e) => setData({ ...data, addr: e.target.value })}
-                    className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Total Balance (Screen 3)</label>
-                  <input
-                    type="text"
-                    value={data.bal}
-                    onChange={(e) => setData({ ...data, bal: e.target.value })}
-                    className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Change $</label>
-                    <input
-                      type="text"
-                      value={data.delta}
-                      onChange={(e) => setData({ ...data, delta: e.target.value })}
-                      className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Change %</label>
-                    <input
-                      type="text"
-                      value={data.pct}
-                      onChange={(e) => setData({ ...data, pct: e.target.value })}
-                      className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Token Amount (e.g. 0.01 SOL)</label>
-                  <input
-                    type="text"
-                    value={data.tokAmt}
-                    onChange={(e) => setData({ ...data, tokAmt: e.target.value })}
-                    className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Token USD</label>
-                    <input
-                      type="text"
-                      value={data.tokUsd}
-                      onChange={(e) => setData({ ...data, tokUsd: e.target.value })}
-                      className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Token Chg</label>
-                    <input
-                      type="text"
-                      value={data.tokChg}
-                      onChange={(e) => setData({ ...data, tokChg: e.target.value })}
-                      className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button onClick={handleSave} className="w-full h-12 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl mt-4">
-                Save Changes
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Header */}
       <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -725,7 +603,7 @@ export default function ShowcasePage() {
                                     title: "Import Recovery Phrase", 
                                     sub: "Import accounts from another wallet", 
                                     icon: <File className="w-5 h-5 text-white" strokeWidth={2} />,
-                                    onClick: () => setIsEditorOpen(true)
+                                    onClick: () => setScreen("editor")
                                   },
                                   { 
                                     title: "Import Private Key", 
@@ -848,6 +726,120 @@ export default function ShowcasePage() {
                             className="w-full h-12 rounded-[12px] bg-[#AB9FF2] hover:bg-[#998EE0] text-black font-bold text-[16px] border-none disabled:opacity-50 transition-all tracking-normal"
                           >
                             Import
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Screen: Editor */}
+                  <AnimatePresence>
+                    {screen === "editor" && (
+                      <motion.div
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="absolute inset-0 bg-[#0F0F0F] z-40 flex flex-col font-sans"
+                      >
+                        <header className="h-14 flex items-center justify-between px-4">
+                          <button onClick={() => setScreen("s1")} className="p-2 text-zinc-100 hover:opacity-70">
+                            <ArrowLeft className="w-6 h-6" />
+                          </button>
+                          <div className="font-bold text-[17px] text-white tracking-normal">Edit Mock Data</div>
+                          <div className="w-10" />
+                        </header>
+                        
+                        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Account Address</label>
+                            <input
+                              type="text"
+                              value={data.addr}
+                              onChange={(e) => setData({ ...data, addr: e.target.value })}
+                              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Total Balance</label>
+                            <input
+                              type="text"
+                              value={data.bal}
+                              onChange={(e) => setData({ ...data, bal: e.target.value })}
+                              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Change $</label>
+                              <input
+                                type="text"
+                                value={data.delta}
+                                onChange={(e) => setData({ ...data, delta: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Change %</label>
+                              <input
+                                type="text"
+                                value={data.pct}
+                                onChange={(e) => setData({ ...data, pct: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Token Amount</label>
+                            <input
+                              type="text"
+                              value={data.tokAmt}
+                              onChange={(e) => setData({ ...data, tokAmt: e.target.value })}
+                              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Token USD</label>
+                              <input
+                                type="text"
+                                value={data.tokUsd}
+                                onChange={(e) => setData({ ...data, tokUsd: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Token Chg</label>
+                              <input
+                                type="text"
+                                value={data.tokChg}
+                                onChange={(e) => setData({ ...data, tokChg: e.target.value })}
+                                className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Account Name</label>
+                            <input
+                              type="text"
+                              value={data.homeName}
+                              onChange={(e) => setData({ ...data, homeName: e.target.value })}
+                              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-4 pb-8">
+                          <Button 
+                            onClick={handleSave}
+                            className="w-full h-12 rounded-xl bg-[#AB9FF2] hover:bg-[#998EE0] text-black font-bold text-[16px] border-none transition-all tracking-normal"
+                          >
+                            Save Changes
                           </Button>
                         </div>
                       </motion.div>
